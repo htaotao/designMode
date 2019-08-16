@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<script>
+    // https://www.cnblogs.com/goloving/category/1252224.html
+    /*
+    * 装饰者用于包装同接口的对象，不仅允许你向方法添加行为，而且还可以将方法设置成原始对象调用
+    * 装饰者是一种实现继承的替代方案。当脚本运行时，在子类中增加行为会影响原有类所有的实例，而装饰者却不然。取而代之的是它能给不同对象各自添加新行为。
+    * */
+    // demo 1
+    // 需要装饰的类（函数）
+    function Macbook() {
+        this.cost = function () {
+            return 1000;
+        }
+    }
+    function Memory(macbook) {
+        this.cost = function () {
+            return macbook.cost() + 75
+        }
+    }
+    function BlurayDrive(macbook) {
+        this.cost = function () {
+            return macbook.cost() + 300
+        }
+    }
+    function Insurance(macbook) {
+        this.cost = function () {
+            return macbook.cost() + 250
+        }
+    }
+    // 用法
+    let myMacbook = new Insurance(new BlurayDrive(new Memory(new Macbook())))
+    let a = new Macbook();
+    console.log(myMacbook)
+    console.log(myMacbook.cost())
+    console.log(a)
+
+    // demo2
+    function ConcreteClass() {
+        this.performTask = function () {
+            console.log(this)
+            this.preTask();
+            console.log('doing something');
+            this.postTask();
+        }
+    }
+
+    function AbstractDecorator(decorated) {
+        this.performTask = function () {
+            decorated.performTask();
+        }
+    }
+
+    function ConcreteDecoratorClass(decorated) {
+        this.base = AbstractDecorator;
+        this.base(decorated);
+        decorated.preTask = function () {
+            console.log('pre-calling...');
+        };
+        decorated.postTask = function () {
+            console.log('post-calling...')
+        }
+    }
+
+    var concrete = new ConcreteClass();
+    console.log(concrete);
+    // concrete:{performTask: fun--doing something}
+    var decorator1 = new ConcreteDecoratorClass(concrete);
+    console.log(concrete);
+    // {performTask: fun--doing something, preTask: fun--pre, postTask: fun--post}
+    console.log(decorator1);
+    // {base: AbstractDecorator, performTask: fun(performTask: fun--doing something)}
+    decorator1.performTask();
+    var decorator2 = new ConcreteDecoratorClass(decorator1);
+    console.log(concrete);
+    // {performTask: fun--doing something, preTask: fun--pre, postTask: post}
+    console.log(decorator1);
+    // {base: AbstractDecorator, performTask: fun(performTask: fun--doing something), preTask: fun--pre, postTask: fun--post}
+    console.log(decorator2);
+    // {base: AbstractDecorator, performTask: fun(fun(performTask: fun--doing something))}
+    decorator2.performTask();
+
+    // demo3
+    var tree = {};
+    tree.decorate = function () {
+        console.log('Make sure the tree won\'t fall');
+    };
+    tree.getDecorator = function (deco) {
+        tree[deco].prototype = this;
+        return new tree[deco];
+        // 1
+    };
+    tree.RedBalls = function () {
+        this.decorate = function () {
+            this.RedBalls.prototype.decorate();
+            console.log('Put on some red balls');
+        }
+    };
+    tree.BlueBalls = function () {
+        this.decorate = function () {
+            this.BlueBalls.prototype.decorate();
+            console.log('Add blue balls');
+        }
+    };
+    tree.Angel = function () {
+        this.decorate = function () {
+            this.Angel.prototype.decorate();
+            console.log('An angel on the top');
+        }
+    };
+    tree = tree.getDecorator('BlueBalls');
+    console.log(tree);
+    //{decorate: fun--blue, __proto__: {decorate: fun--Make}}
+    tree = tree.getDecorator('Angel');
+    console.log(tree);
+    // {decorate: fun--angel, __proto__: {decorate: fun--blue}}
+    tree = tree.getDecorator('RedBalls');
+    console.log(tree);
+    // {decorate: fun--red, __proto__: {decorate: fun--angel}}
+    tree.decorate();
+    // make --> blue --> angel --> red
+    // 优点是把类（函数）的核心职责和装饰功能区分开了
+</script>
+
+<body>
+</body>
+
+</html>

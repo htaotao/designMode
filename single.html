@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        // https://www.cnblogs.com/goloving/category/1252224.html
+        /*
+        * 1.使用对象字面量的方法
+        * */
+        var mySingleton = {
+            property1: "something",
+            property2: "something else",
+            method1: function () {
+                console.log('hello world');
+            }
+        };
+
+        /*
+        * 如果以后要扩展该对象，
+        * 你可以添加自己的私有成员和方法，
+        * 然后使用闭包在其内部封装这些变量和函数声明。
+        * 只暴露你想暴露的public成员和方法
+        * */
+        var mySingleton = function () {
+            var privateVariable = 'something private';
+            function showPrivate() {
+                console.log(privateVariable);
+            }
+            return {
+                publicMethod: function () {
+                    showPrivate();
+                },
+                publicVar: 'the public can see this!'
+            }
+        };
+        var single = mySingleton();
+        single.publicMethod();
+        console.log(single.publicVar);
+
+        /*
+        * 只有在使用的时候才初始化
+        * 可以另外一个构造函数里来初始化这些代码
+        * */
+        var Singleton = (function () {
+            var instantiated;
+            function init() {
+                return {
+                    publicMethod: function () {
+                        console.log('hello world');
+                    },
+                    publicProperty: 'test'
+                };
+            }
+            return {
+                getInstance: function () {
+                    if (!instantiated) {
+                        instantiated = init();
+                    }
+                    return instantiated;
+                }
+            }
+        })();
+        Singleton.getInstance().publicMethod(); // hello world
+
+        // eg: 最佳实践
+        var SingletonTester = (function () {
+            function Singleton(args) {
+                var args = args || {};
+                this.name = 'SingletonTester';
+                this.pointX = args.pointX || 6;
+                this.pointY = args.pointY || 10;
+            }
+            var instance;
+            var _static = {
+                name: 'SingletonTester',
+                getInstance: function (args) {
+                    if (instance === undefined) {
+                        instance = new Singleton(args)
+                    }
+                    return instance;
+                }
+            };
+            return _static;
+        })();
+        var singletonTest = SingletonTester.getInstance({pointX: 5});
+        console.log(singletonTest.pointX);
+
+        /*
+        * 判断是否存在实例
+        * */
+        function Universe() {
+            if (typeof Universe.instance === 'object') {
+                return Universe.instance;
+            }
+            this.start_time = 0;
+            this.bang = 'Big';
+            Universe.instance = this;
+        }
+        var uni = new Universe();
+        var uni2 = new Universe();
+        console.log(uni === uni2);
+
+        /*
+        * 缓存实例，重写构造函数
+        * */
+        function Universe() {
+            var instance = this;
+            this.start_time = 0;
+            this.bang = "Big";
+            Universe = function () {
+                return instance;
+            }
+        }
+        var uni = new Universe();
+        var uni2 = new  Universe();
+        uni.bang = '123';
+        console.log(uni === uni2);
+        console.log(uni2.bang);
+
+    </script>
+</body>
+
+</html>

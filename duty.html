@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        // https://www.cnblogs.com/goloving/category/1252224.html
+        /*
+        * 职责链模式（Chain of responsibility）
+        * 使多个对象都有机会处理请求，
+        * 从而避免请求的发送者和接受者之间的耦合关系。
+        * 将这个对象连成一条链，
+        * 并沿着这条链传递该请求，
+        * 直到有一个对象处理他为止。
+        * */
+
+        // demo1
+        var NO_TOPIC = -1;
+        var Topic;
+        function Handler(s, t) {
+            /*
+            * 第一个是继任者（用于将处理请求传下去）
+            * 第二个是传递层级（可以用于控制在某个层级下是否执行某个操作
+            * */
+            this.successor = s || null;
+            this.topic = t || 0;
+        }
+        Handler.prototype = {
+            handle: function () {
+                console.log(this);
+                if (this.successor) {
+                    this.successor.handle()
+                }
+            },
+            has: function () {
+                return this.topic != NO_TOPIC;
+            }
+        };
+        var app = new Handler({
+            handle: function () {
+                console.log('app handle');
+            }
+        }, 3);
+        console.log(app);
+        // app {successor: {handle: fun--app}, topic: 3, __proto__: Handler.prototype}
+        var dialog = new Handler(app, 1);
+        console.log(dialog);
+        // dialog {successor: app, topic: 1, __proto__: Handler.prototype}
+        var button = new Handler(dialog, 2);
+        console.log(button);
+        // button {successor: dialog, topic: 2, __proto__: Handler.prototype}
+        button.handle();
+        // button.handle()->dialog.handle()->app.handle()->参数里的handle()
+
+        /*
+        * 只让dialog的这个对象进行处理呢？
+        * 其实可以定义dialog实例对象的handle方法就可以了，
+        * 但需要在new button的之前来做
+        * */
+        var app = new Handler({
+            handle: function () {
+                console.log('app handle');
+            }
+        }, 3);
+        console.log(app);
+        // app {successor: {handle: fun--app}, topic: 3, __proto__: Handler.prototype}
+        var dialog = new Handler(app, 1);
+        console.log(dialog);
+        // dialog {successor: app, topic: 1, __proto__: Handler.prototype}
+        dialog.handle = function () {
+            console.log('dialog before ...');
+            // 这里做具体的处理操作
+            console.log('dialog after ...');
+        };
+        // dialog {successor: app, handle: fun--dialog, topic: 1, __proto__: Handler.prototype}
+        var button = new Handler(dialog, 2);
+        // button {successor: dialog, __proto__: Handler.prototype}
+        button.handle()
+
+        /*
+        * 调用原型的handle方法，
+        * 来继续调用其继任者（也就是successor ）的handle方法
+        * */
+        var app = new Handler({
+            handle: function () {
+                console.log('app handle');
+            }
+        }, 3);
+
+        var dialog = new Handler(app, 1);
+        dialog.handle = function () {
+            console.log('dialog before ...')
+            // 这里做具体的处理操作
+            Handler.prototype.handle.call(this); //继续往上走
+            console.log('dialog after ...')
+        };
+
+        var button = new Handler(dialog, 2);
+        button.handle = function () {
+            console.log('button before ...')
+            // 这里做具体的处理操作
+            Handler.prototype.handle.call(this);
+            console.log('button after ...')
+        };
+
+        button.handle();
+        /*
+        * 如果想先自身处理，然后再调用继任者处理的话，
+        * 就在末尾执行Handler.prototype.handle.call(this);代码，
+        * 如果想先处理继任者的代码，
+        * 就在开头执行Handler.prototype.handle.call(this);代码
+        * */
+    </script>
+</body>
+
+</html>
